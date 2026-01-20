@@ -1,14 +1,17 @@
 /**
  * 测速服务
- * 使用 Fetch API 测量节点延迟
+ * 支持ESA真实测速和模拟测速
  */
+
+import { esaClient } from './esaClient.js'
+import { getESAConfig, validateESAConfig } from '../config/esaConfig.js'
 
 // 测速配置
 const CONFIG = {
-  // 测量次数
-  measureCount: 3,
   // 超时时间（毫秒）
   timeout: 5000,
+  // 测量次数
+  measureCount: 3,
   // 最大重试次数
   maxRetries: 2,
   // 重试间隔（毫秒）
@@ -17,10 +20,27 @@ const CONFIG = {
   maxConcurrent: 5
 }
 
-// 测速队列
-const queue = []
-let isProcessing = false
-let concurrentCount = 0
+// 检查是否使用真实ESA测速
+let useRealESA = false
+
+/**
+ * 初始化测速服务
+ * @param {Object} config - 配置对象
+ */
+export function initSpeedTest(config = {}) {
+  const esaConfig = getESAConfig()
+  useRealESA = validateESAConfig(esaConfig)
+  
+  if (useRealESA) {
+    console.log('使用真实ESA测速')
+    esaClient.updateConfig({
+      ...esaConfig,
+      ...config
+    })
+  } else {
+    console.log('使用模拟测速（未配置ESA密钥）')
+  }
+}
 
 /**
  * 单次测速
@@ -37,7 +57,7 @@ async function measureOnce(url) {
     // 使用 HEAD 请求减少数据传输
     await fetch(url, {
       method: 'HEAD',
-      mode: 'no-cors', // 允许跨域请求
+      mode: 'no-cors',
       cache: 'no-cache',
       signal: controller.signal
     })
@@ -72,7 +92,6 @@ async function measureMultiple(url) {
     }
   }
   
-  // 如果所有测量都失败，返回错误
   if (results.length === 0) {
     return {
       latency: 0,
@@ -81,7 +100,6 @@ async function measureMultiple(url) {
     }
   }
   
-  // 计算平均值（去掉最高和最低值）
   const sortedResults = results.sort((a, b) => a - b)
   const trimmedResults = sortedResults.slice(1, -1)
   const averageLatency = trimmedResults.length > 0
@@ -116,7 +134,6 @@ async function measureWithRetry(url) {
       lastError = error.message
     }
     
-    // 如果不是最后一次尝试，等待后重试
     if (attempt < CONFIG.maxRetries) {
       await new Promise(resolve => setTimeout(resolve, CONFIG.retryDelay))
     }
@@ -130,114 +147,93 @@ async function measureWithRetry(url) {
 }
 
 /**
- * 处理测速队列
- */
-async function processQueue() {
-  if (isProcessing || queue.length === 0 || concurrentCount >= CONFIG.maxConcurrent) {
-    return
-  }
-  
-  isProcessing = true
-  
-  while (queue.length > 0 && concurrentCount < CONFIG.maxConcurrent) {
-    const task = queue.shift()
-    concurrentCount++
-    
-    // 异步执行任务
-    task()
-      .then(() => {
-        concurrentCount--
-      })
-      .catch((error) => {
-        console.error('测速任务执行失败:', error)
-        concurrentCount--
-      })
-  }
-  
-  isProcessing = false
-}
-
-/**
- * 添加测速任务到队列
+ * 测速单个节点
  * @param {Object} node - 节点对象
  * @param {Function} onProgress - 进度回调
- * @param {Function} onComplete - 完成回调
+ * @returns {Promise<Object>} 测速结果
  */
-export function addSpeedTestTask(node, onProgress, onComplete) {
-  const task = async () => {
-    try {
-      onProgress?.({ nodeId: node.id, status: 'measuring' })
-      
-      // 使用节点的经纬度生成一个用于测速的 URL
-      // 注意：这里使用一个公开的 CDN 节点作为示例
-      // 实际应用中应该使用真实的 ESA 节点地址
-      const testUrl = `https://www.google.com/generate_204`
-      
-      const result = await measureWithRetry(testUrl)
-      
-      onComplete?.({
-        nodeId: node.id,
-        latency: result.latency,
-        success: result.success,
-        error: result.error,
-        timestamp: Date.now()
-      })
-    } catch (error) {
-      onComplete?.({
-        nodeId: node.id,
-        latency: 0,
-        success: false,
-        error: error.message,
-        timestamp: Date.now()
-      })
+export async function testNode(node, onProgress) {
+  onProgress?.({ nodeId: node.id, status: 'measuring' })
+  
+  if (useRealESA && node.url) {
+    // 使用真实ESA测速
+    const result = await esaClient.testNode(node.id)
+    return {
+      nodeId: node.id,
+      latency: result.latency,
+      success: result.success,
+      error: result.error,
+      timestamp: result.timestamp
+    }
+  } else {
+    // 使用模拟测速
+    const result = generateMockSpeedTest(node)
+    return {
+      nodeId: node.id,
+      latency: result.latency,
+      success: result.success,
+      error: result.error,
+      timestamp: result.timestamp
     }
   }
-  
-  queue.push(task)
-  processQueue()
 }
 
 /**
  * 批量测速
  * @param {Array} nodes - 节点数组
  * @param {Function} onProgress - 进度回调
- * @param {Function} onComplete - 完成回调
+ * @returns {Promise<Array>} 测速结果数组
  */
-export function batchSpeedTest(nodes, onProgress, onComplete) {
-  let completed = 0
-  const total = nodes.length
+export async function batchSpeedTest(nodes, onProgress) {
   const results = []
+  const total = nodes.length
   
-  nodes.forEach((node, index) => {
-    addSpeedTestTask(
-      node,
+  if (useRealESA) {
+    // 使用ESA客户端并发测速
+    const nodeIds = nodes.map(n => n.id)
+    const esaResults = await esaClient.concurrentBatchTest(
+      nodeIds,
+      CONFIG.maxConcurrent,
       (progress) => {
         onProgress?.({
-          ...progress,
-          progress: completed / total,
-          total,
-          completed
+          nodeId: progress.nodeId,
+          status: progress.error ? 'failed' : 'completed',
+          progress: progress.progress,
+          total: progress.total,
+          completed: progress.completed
         })
-      },
-      (result) => {
-        results[index] = result
-        completed++
-        
-        onProgress?.({
-          nodeId: node.id,
-          status: 'completed',
-          progress: completed / total,
-          total,
-          completed
-        })
-        
-        // 所有任务完成
-        if (completed === total) {
-          onComplete?.(results)
-        }
       }
     )
-  })
+    return esaResults
+  } else {
+    // 使用模拟测速
+    for (let i = 0; i < total; i++) {
+      const node = nodes[i]
+      onProgress?.({
+        nodeId: node.id,
+        status: 'measuring',
+        progress: i / total,
+        total,
+        completed: i
+      })
+      
+      const result = generateMockSpeedTest(node)
+      results.push(result)
+      
+      onProgress?.({
+        nodeId: node.id,
+        status: 'completed',
+        progress: (i + 1) / total,
+        total,
+        completed: i + 1
+      })
+      
+      // 模拟网络延迟
+      await new Promise(resolve => setTimeout(resolve, 50))
+    }
+    
+    return results
+  }
 }
 
 /**
@@ -263,13 +259,10 @@ export function calculateNodeStatus(latency) {
  * @returns {Object} - 测速结果
  */
 export function generateMockSpeedTest(node) {
-  // 基于节点的基础延迟添加随机波动
   const baseLatency = node.latency || 100
-  const variance = Math.random() * 40 - 20 // ±20ms 波动
+  const variance = Math.random() * 40 - 20
   const latency = Math.max(10, Math.round(baseLatency + variance))
-  
-  // 模拟偶尔的测速失败
-  const success = Math.random() > 0.05 // 95% 成功率
+  const success = Math.random() > 0.05
   
   return {
     nodeId: node.id,
@@ -277,5 +270,24 @@ export function generateMockSpeedTest(node) {
     success,
     error: success ? undefined : '连接超时',
     timestamp: Date.now()
+  }
+}
+
+/**
+ * 检查是否使用真实ESA测速
+ * @returns {boolean}
+ */
+export function isUsingRealESA() {
+  return useRealESA
+}
+
+/**
+ * 获取当前配置
+ * @returns {Object}
+ */
+export function getConfig() {
+  return {
+    ...CONFIG,
+    useRealESA
   }
 }
