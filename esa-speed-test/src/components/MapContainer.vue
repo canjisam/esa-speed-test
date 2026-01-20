@@ -9,7 +9,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Sunny, Moon } from '@element-plus/icons-vue'
@@ -208,6 +208,44 @@ const getStatusText = (status) => {
   }
   return texts[status] || '未知'
 }
+
+// 监听节点变化，实时更新标记
+watch(() => nodesStore.allNodes, (newNodes) => {
+  if (!map.value) return
+  
+  newNodes.forEach((node, index) => {
+    if (markers.value[index]) {
+      const marker = markers.value[index]
+      const isSelected = nodesStore.selectedNode?.id === node.id
+      
+      // 更新图标
+      marker.setIcon(createNodeIcon(node.status, isSelected))
+      
+      // 更新弹窗内容
+      marker.setPopupContent(`
+        <div style="padding: 10px; min-width: 200px;">
+          <h3 style="margin: 0 0 10px 0; color: #333;">${node.name}</h3>
+          <p style="margin: 5px 0; color: #666;">
+            <strong>地区:</strong> ${node.region}
+          </p>
+          <p style="margin: 5px 0; color: #666;">
+            <strong>国家:</strong> ${node.country}
+          </p>
+          <p style="margin: 5px 0; color: #666;">
+            <strong>状态:</strong> 
+            <span style="color: ${getStatusColor(node.status)}">${getStatusText(node.status)}</span>
+          </p>
+          <p style="margin: 5px 0; color: #666;">
+            <strong>延迟:</strong> ${node.latency} ms
+          </p>
+          <p style="margin: 5px 0; color: #666;">
+            <strong>负载:</strong> ${node.load}%
+          </p>
+        </div>
+      `)
+    }
+  })
+}, { deep: true })
 
 // 导出方法供父组件调用
 defineExpose({

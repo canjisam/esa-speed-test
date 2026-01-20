@@ -44,7 +44,7 @@
           <div class="node-name">{{ node.name }}</div>
           <div class="node-details">
             <span class="node-region">{{ node.region }}</span>
-            <span class="node-latency">{{ node.latency }} ms</span>
+            <span class="node-latency" :class="getLatencyClass(node.latency)">{{ node.latency }} ms</span>
             <span class="node-load">{{ node.load }}%</span>
           </div>
         </div>
@@ -132,6 +132,14 @@ const getStatusText = (status) => {
     congested: '拥堵'
   }
   return texts[status] || '未知'
+}
+
+// 获取延迟样式类
+const getLatencyClass = (latency) => {
+  if (latency === 0) return 'latency-offline'
+  if (latency < 150) return 'latency-online'
+  if (latency < 300) return 'latency-congested'
+  return 'latency-offline'
 }
 
 // 处理筛选变化
@@ -224,6 +232,22 @@ const handleNodeClick = (node) => {
 
 .node-latency {
   flex-shrink: 0;
+  transition: color 0.3s ease;
+}
+
+.node-latency.latency-online {
+  color: #52c41a;
+  font-weight: 600;
+}
+
+.node-latency.latency-congested {
+  color: #faad14;
+  font-weight: 600;
+}
+
+.node-latency.latency-offline {
+  color: #ff4d4f;
+  font-weight: 600;
 }
 
 .node-load {
