@@ -1,14 +1,23 @@
 <template>
   <div class="home">
+    <div class="bg-effects">
+      <div class="grid-overlay"></div>
+      <div class="scanline"></div>
+      <div class="glow-spots"></div>
+    </div>
     <div class="header">
-      <h1>全球边缘节点实时测速面板</h1>
+      <h1>
+        <span class="title-icon">◈</span>
+        全球边缘节点实时测速面板
+        <span class="title-glow"></span>
+      </h1>
       <div class="header-actions">
-        <el-button :icon="Bell" @click="openAlertPanel">
+        <el-button :icon="Bell" @click="openAlertPanel" class="header-btn">
           告警通知
           <el-badge v-if="alertCount > 0" :value="alertCount" class="alert-badge" />
         </el-button>
-        <el-button :icon="Document" @click="openReportPanel">测速报告</el-button>
-        <el-button type="primary" :icon="Setting" @click="openConfig">告警配置</el-button>
+        <el-button :icon="Document" @click="openReportPanel" class="header-btn">测速报告</el-button>
+        <el-button type="primary" :icon="Setting" @click="openConfig" class="header-btn primary">告警配置</el-button>
       </div>
     </div>
     <div class="content">
@@ -50,7 +59,7 @@
     <el-dialog
       v-model="reportDialogVisible"
       title="测速报告"
-      width="800px"
+      width="900px"
     >
       <ReportPanel />
     </el-dialog>
@@ -193,79 +202,216 @@ const openReportPanel = () => {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 12px;
+  padding: var(--spacing-lg);
   box-sizing: border-box;
-  background: #f0f2f5;
+  background: 
+    radial-gradient(ellipse at 20% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(0, 245, 255, 0.03) 0%, transparent 70%),
+    var(--bg-primary);
+  animation: slideIn 0.5s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 背景特效层 */
+.bg-effects {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.grid-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.8;
+}
+
+.scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.02) 2px,
+    rgba(0, 0, 0, 0.02) 4px
+  );
+  animation: scanline 8s linear infinite;
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.glow-spots {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 15% 30%, rgba(0, 245, 255, 0.03) 0%, transparent 25%),
+    radial-gradient(circle at 85% 70%, rgba(139, 92, 246, 0.03) 0%, transparent 25%),
+    radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.02) 0%, transparent 50%);
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-  padding: 0 4px;
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  backdrop-filter: blur(20px);
+  box-shadow: 
+    var(--shadow-md),
+    var(--shadow-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  position: relative;
+  z-index: 1;
+  transition: all var(--transition-normal);
+}
+
+.header:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 
+    var(--shadow-lg),
+    0 0 40px rgba(59, 130, 246, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 h1 {
   margin: 0;
-  font-size: 18px;
-  color: #333;
+  font-size: 22px;
   font-weight: 600;
-  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  position: relative;
+}
+
+.title-icon {
+  color: var(--neon-cyan);
+  font-size: 24px;
+  text-shadow: 0 0 20px var(--neon-cyan-glow);
+  animation: iconPulse 2s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+.title-glow {
+  position: absolute;
+  left: -10px;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+  z-index: -1;
 }
 
 .header-actions {
   display: flex;
-  gap: 6px;
+  gap: var(--spacing-md);
+}
+
+.header-btn {
+  padding: 10px 18px;
+  font-size: 13px;
+  border-radius: var(--border-radius-md);
+}
+
+.header-btn.primary {
+  padding: 10px 20px;
 }
 
 .alert-badge {
-  margin-left: 4px;
+  margin-left: 6px;
 }
 
 .content {
   flex: 1;
   display: flex;
-  gap: 12px;
+  gap: var(--spacing-lg);
   min-height: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .sidebar-left {
-  width: 30%;
+  width: 26%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--spacing-md);
   min-height: 0;
 }
 
 .center-content {
-  width: 40%;
+  width: 48%;
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
 
 .sidebar-right {
-  width: 30%;
+  width: 26%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--spacing-md);
   min-height: 0;
 }
 
 /* 响应式布局 */
-@media screen and (max-width: 1440px) {
+@media screen and (max-width: 1600px) {
   .home {
-    padding: 10px;
-  }
-  
-  .content {
-    gap: 10px;
+    padding: var(--spacing-md);
   }
   
   .sidebar-left,
   .sidebar-right {
-    gap: 8px;
+    width: 28%;
+  }
+  
+  .center-content {
+    width: 44%;
+  }
+}
+
+@media screen and (max-width: 1440px) {
+  .content {
+    gap: var(--spacing-md);
   }
 }
 
@@ -296,12 +442,12 @@ h1 {
   }
   
   .sidebar-left {
-    height: 45%;
+    height: 42%;
   }
   
   .center-content {
-    height: 25%;
-    min-height: 300px;
+    height: 28%;
+    min-height: 320px;
   }
   
   .sidebar-right {
@@ -311,32 +457,40 @@ h1 {
 
 @media screen and (max-width: 768px) {
   .home {
-    padding: 8px;
+    padding: var(--spacing-sm);
   }
   
   .header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
-    margin-bottom: 10px;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-md);
   }
   
   h1 {
-    font-size: 16px;
+    font-size: 18px;
   }
   
   .header-actions {
     width: 100%;
     justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+  
+  .header-btn {
+    padding: 8px 14px;
+    font-size: 12px;
   }
   
   .sidebar-left {
-    height: 40%;
+    height: 38%;
   }
   
   .center-content {
-    height: 30%;
-    min-height: 250px;
+    height: 32%;
+    min-height: 280px;
   }
   
   .sidebar-right {

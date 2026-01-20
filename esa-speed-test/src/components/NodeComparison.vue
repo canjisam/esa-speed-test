@@ -204,10 +204,12 @@ refreshData()
 
 <style scoped>
 .node-comparison {
-  background: white;
-  border-radius: 8px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md), var(--shadow-glow);
+  backdrop-filter: blur(20px);
 }
 
 .comparison-header {
@@ -221,7 +223,8 @@ refreshData()
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
 }
 
 .comparison-content {
@@ -238,20 +241,25 @@ refreshData()
   font-size: 12px;
   font-weight: 600;
   min-width: 35px;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
 }
 
 .latency-online {
-  color: #52c41a;
+  color: var(--status-online);
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
   font-weight: 600;
 }
 
 .latency-congested {
-  color: #faad14;
+  color: var(--status-congested);
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
   font-weight: 600;
 }
 
 .latency-offline {
-  color: #ff4d4f;
+  color: var(--status-offline);
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
   font-weight: 600;
 }
 
@@ -259,7 +267,7 @@ refreshData()
   display: flex;
   justify-content: space-around;
   padding-top: 16px;
-  border-top: 1px solid #e8e8e8;
+  border-top: 1px solid var(--border-color);
 }
 
 .summary-item {
@@ -270,17 +278,66 @@ refreshData()
 
 .summary-label {
   font-size: 12px;
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 4px;
 }
 
 .summary-value {
   font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
 }
 
 .summary-value.online {
-  color: #52c41a;
+  color: var(--status-online);
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+/* Element Plus Table 暗色覆盖 */
+:deep(.el-table) {
+  --el-table-bg-color: var(--bg-tertiary);
+  --el-table-tr-bg-color: var(--bg-tertiary);
+  --el-table-header-bg-color: rgba(59, 130, 246, 0.1);
+  --el-table-row-hover-bg-color: rgba(59, 130, 246, 0.1);
+  --el-table-border-color: var(--border-color);
+  --el-table-border: 1px solid var(--border-color);
+  --el-table-text-color: var(--text-primary);
+  --el-table-header-text-color: var(--text-secondary);
+}
+
+:deep(.el-table th) {
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+
+:deep(.el-table--stripe .el-table__body tr.el-table__row--striped td) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+:deep(.el-table__body-wrapper) {
+  background: var(--bg-tertiary);
+}
+
+:deep(.el-table::before) {
+  background-color: var(--border-color);
+}
+
+/* Element Plus Tag 暗色覆盖 */
+:deep(.el-tag--success) {
+  --el-tag-bg-color: rgba(16, 185, 129, 0.2);
+  --el-tag-border-color: var(--status-online);
+  --el-tag-text-color: var(--status-online);
+}
+
+:deep(.el-tag--warning) {
+  --el-tag-bg-color: rgba(245, 158, 11, 0.2);
+  --el-tag-border-color: var(--status-congested);
+  --el-tag-text-color: var(--status-congested);
+}
+
+:deep(.el-tag--danger) {
+  --el-tag-bg-color: rgba(239, 68, 68, 0.2);
+  --el-tag-border-color: var(--status-offline);
+  --el-tag-text-color: var(--status-offline);
 }
 </style>

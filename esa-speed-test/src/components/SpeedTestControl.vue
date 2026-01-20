@@ -5,28 +5,29 @@
       <el-switch
         v-model="isTesting"
         @change="handleToggleTest"
-        active-text="测速中"
-        inactive-text="已停止"
-        :active-icon="VideoPlay"
-        :inactive-icon="VideoPause"
+        size="small"
       />
     </div>
     
     <div class="control-info">
-      <div class="info-item">
-        <span class="info-label">上次更新:</span>
+      <div class="info-row">
+        <span class="info-label">更新:</span>
         <span class="info-value">{{ lastUpdateTime }}</span>
+        <span class="info-divider">|</span>
+        <span class="info-label">间隔:</span>
+        <span class="info-value">{{ refreshInterval }}s</span>
       </div>
-      <div class="info-item">
-        <span class="info-label">刷新间隔:</span>
-        <span class="info-value">{{ refreshInterval }}秒</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">测速进度:</span>
+      
+      <div class="progress-section">
+        <div class="progress-row">
+          <span class="progress-label">进度</span>
+          <span class="progress-value">{{ testProgress }}%</span>
+        </div>
         <el-progress 
           :percentage="testProgress" 
           :status="testProgress === 100 ? 'success' : ''"
-          :stroke-width="6"
+          :stroke-width="4"
+          :show-text="false"
         />
       </div>
     </div>
@@ -34,7 +35,7 @@
     <div class="control-actions">
       <el-button 
         type="primary" 
-        :icon="Refresh" 
+        size="small"
         @click="handleManualTest"
         :loading="isTesting"
         :disabled="isTesting"
@@ -43,7 +44,7 @@
       </el-button>
       
       <el-button 
-        :icon="RefreshRight" 
+        size="small"
         @click="handleRefreshIntervalChange"
       >
         调整间隔
@@ -53,28 +54,28 @@
     <el-dialog
       v-model="showIntervalDialog"
       title="设置刷新间隔"
-      width="300px"
+      width="280px"
     >
       <el-slider
         v-model="tempRefreshInterval"
         :min="5"
         :max="60"
         :step="5"
-        show-input
         :marks="{ 5: '5s', 30: '30s', 60: '60s' }"
       />
       <template #footer>
-        <el-button @click="showIntervalDialog = false">取消</el-button>
-        <el-button type="primary" @click="confirmIntervalChange">确定</el-button>
+        <div class="dialog-actions">
+          <el-button size="small" @click="showIntervalDialog = false">取消</el-button>
+          <el-button size="small" type="primary" @click="confirmIntervalChange">确定</el-button>
+        </div>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { VideoPlay, VideoPause, Refresh, RefreshRight } from '@element-plus/icons-vue'
 import { useNodesStore } from '../stores/nodes'
 import { generateMockSpeedTest, calculateNodeStatus } from '../services/speedTest'
 
@@ -95,14 +96,12 @@ const showIntervalDialog = ref(false)
 const tempRefreshInterval = ref(props.refreshInterval)
 let testInterval = null
 
-// 格式化时间
 const formatTime = (timestamp) => {
   if (!timestamp) return '从未'
   const date = new Date(timestamp)
-  return date.toLocaleTimeString('zh-CN')
+  return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
 }
 
-// 切换测速状态
 const handleToggleTest = (value) => {
   if (value) {
     startAutoTest()
@@ -113,7 +112,6 @@ const handleToggleTest = (value) => {
   }
 }
 
-// 启动自动测速
 const startAutoTest = () => {
   emit('test-start')
   isTesting.value = true
@@ -123,7 +121,6 @@ const startAutoTest = () => {
   }, props.refreshInterval * 1000)
 }
 
-// 停止自动测速
 const stopAutoTest = () => {
   isTesting.value = false
   if (testInterval) {
@@ -132,7 +129,6 @@ const stopAutoTest = () => {
   }
 }
 
-// 执行测速
 const runSpeedTest = async () => {
   const nodes = nodesStore.allNodes
   let completed = 0
@@ -140,19 +136,15 @@ const runSpeedTest = async () => {
   
   testProgress.value = 0
   
-  // 模拟测速过程
   for (const node of nodes) {
-    // 生成模拟测速数据
     const result = generateMockSpeedTest(node)
     
-    // 更新节点数据
     nodesStore.updateNode(node.id, {
       latency: result.latency,
       status: calculateNodeStatus(result.latency),
       lastTestTime: result.timestamp
     })
     
-    // 添加测速历史记录
     nodesStore.addSpeedTestRecord({
       nodeId: node.id,
       latency: result.latency,
@@ -169,7 +161,6 @@ const runSpeedTest = async () => {
       completed
     })
     
-    // 模拟网络延迟，避免所有节点同时更新
     await new Promise(resolve => setTimeout(resolve, 50))
   }
   
@@ -177,29 +168,25 @@ const runSpeedTest = async () => {
   emit('test-complete', { success: true })
 }
 
-// 手动测速
 const handleManualTest = () => {
   runSpeedTest()
 }
 
-// 调整刷新间隔
 const handleRefreshIntervalChange = () => {
   tempRefreshInterval.value = props.refreshInterval
   showIntervalDialog.value = true
 }
 
-// 确认间隔变更
 const confirmIntervalChange = () => {
   showIntervalDialog.value = false
   emit('interval-change', tempRefreshInterval.value)
   
-  // 如果正在测速，重启定时器
   if (isTesting.value) {
     stopAutoTest()
     startAutoTest()
   }
   
-  ElMessage.success(`刷新间隔已设置为 ${tempRefreshInterval.value} 秒`)
+  ElMessage.success(`刷新间隔: ${tempRefreshInterval.value}秒`)
 }
 
 onUnmounted(() => {
@@ -209,51 +196,83 @@ onUnmounted(() => {
 
 <style scoped>
 .speed-test-control {
-  background: white;
-  border-radius: 6px;
-  padding: 12px;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
-  height: 30%;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: 10px;
+  box-shadow: var(--shadow-sm), var(--shadow-glow);
+  height: 26%;
   display: flex;
   flex-direction: column;
+  backdrop-filter: blur(20px);
 }
 
 .control-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   flex-shrink: 0;
 }
 
 .control-header h3 {
   margin: 0;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .control-info {
   flex: 1;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   overflow-y: auto;
 }
 
-.info-item {
+.info-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
-  font-size: 12px;
+  gap: 6px;
+  font-size: 11px;
+  margin-bottom: 8px;
 }
 
 .info-label {
-  color: #666;
+  color: var(--text-muted);
 }
 
 .info-value {
-  color: #333;
+  color: var(--neon-cyan);
   font-weight: 500;
+  font-family: 'SF Mono', monospace;
+}
+
+.info-divider {
+  color: var(--border-color);
+}
+
+.progress-section {
+  background: var(--bg-tertiary);
+  border-radius: var(--border-radius-sm);
+  padding: 8px;
+}
+
+.progress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.progress-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.progress-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--neon-cyan);
+  font-family: 'SF Mono', monospace;
 }
 
 .control-actions {
@@ -264,7 +283,18 @@ onUnmounted(() => {
 
 .control-actions .el-button {
   flex: 1;
-  padding: 8px 12px;
+  padding: 6px 10px;
+  font-size: 11px;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.dialog-actions .el-button {
+  padding: 6px 12px;
   font-size: 12px;
 }
 </style>

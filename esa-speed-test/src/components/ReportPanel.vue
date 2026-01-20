@@ -168,10 +168,12 @@ const exportReport = () => {
 
 <style scoped>
 .report-panel {
-  background: white;
-  border-radius: 8px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md), var(--shadow-glow);
+  backdrop-filter: blur(20px);
 }
 
 .report-header {
@@ -185,7 +187,8 @@ const exportReport = () => {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
 }
 
 .header-actions {
@@ -201,27 +204,35 @@ const exportReport = () => {
 .report-summary {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 12px;
   margin-bottom: 24px;
 }
 
 .summary-card {
   padding: 16px;
-  background: #f5f5f5;
-  border-radius: 6px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   text-align: center;
+  transition: all 0.3s ease;
+}
+
+.summary-card:hover {
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
 }
 
 .summary-title {
   font-size: 12px;
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 8px;
 }
 
 .summary-value {
   font-size: 24px;
   font-weight: 600;
-  color: #333;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.4);
 }
 
 .region-stats,
@@ -234,26 +245,30 @@ const exportReport = () => {
   margin: 0 0 12px 0;
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .latency-excellent {
-  color: #52c41a;
+  color: var(--status-online);
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
   font-weight: 600;
 }
 
 .latency-good {
-  color: #1890ff;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
   font-weight: 600;
 }
 
 .latency-fair {
-  color: #faad14;
+  color: var(--status-congested);
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
   font-weight: 600;
 }
 
 .latency-poor {
-  color: #ff4d4f;
+  color: var(--status-offline);
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
   font-weight: 600;
 }
 
@@ -270,15 +285,46 @@ const exportReport = () => {
 }
 
 .report-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-.report-content::-webkit-scrollbar-thumb {
-  background: #888;
+  background: var(--bg-secondary);
   border-radius: 3px;
 }
 
+.report-content::-webkit-scrollbar-thumb {
+  background: var(--neon-blue);
+  border-radius: 3px;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
 .report-content::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: var(--neon-cyan);
+  box-shadow: 0 0 15px rgba(0, 245, 255, 0.5);
+}
+
+/* Element Plus Table 暗色覆盖 */
+:deep(.el-table) {
+  --el-table-bg-color: var(--bg-tertiary);
+  --el-table-tr-bg-color: var(--bg-tertiary);
+  --el-table-header-bg-color: rgba(59, 130, 246, 0.1);
+  --el-table-row-hover-bg-color: rgba(59, 130, 246, 0.1);
+  --el-table-border-color: var(--border-color);
+  --el-table-border: 1px solid var(--border-color);
+  --el-table-text-color: var(--text-primary);
+  --el-table-header-text-color: var(--text-secondary);
+}
+
+:deep(.el-table th) {
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+
+:deep(.el-table--stripe .el-table__body tr.el-table__row--striped td) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+:deep(.el-table__body-wrapper) {
+  background: var(--bg-tertiary);
+}
+
+:deep(.el-table::before) {
+  background-color: var(--border-color);
 }
 </style>

@@ -169,14 +169,53 @@ defineExpose({
 
 <style scoped>
 .form-tip {
-  margin-left: 10px;
+  margin-left: 12px;
   font-size: 12px;
-  color: #999;
+  color: var(--text-muted);
 }
 
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 12px;
+}
+
+/* Element Plus Form 暗色覆盖 */
+:deep(.el-form-item__label) {
+  color: var(--text-secondary) !important;
+}
+
+:deep(.el-input-number) {
+  --el-input-bg-color: var(--bg-tertiary);
+  --el-input-border-color: var(--border-color);
+  --el-input-text-color: var(--text-primary);
+  --el-input-placeholder-color: var(--text-muted);
+}
+
+:deep(.el-input-number .el-input__wrapper) {
+  background-color: var(--bg-tertiary) !important;
+  border-color: var(--border-color) !important;
+}
+
+:deep(.el-input-number:hover .el-input__wrapper) {
+  border-color: var(--neon-blue) !important;
+}
+
+:deep(.el-input-number.is-focus .el-input__wrapper) {
+  border-color: var(--neon-cyan) !important;
+  box-shadow: 0 0 0 1px var(--neon-cyan) !important;
+}
+
+:deep(.el-divider__text) {
+  background: var(--bg-secondary);
+  color: var(--text-secondary) !important;
+}
+
+:deep(.el-divider) {
+  border-color: var(--border-color) !important;
+}
+
+:deep(.el-switch) {
+  --el-switch-off-color: var(--bg-tertiary);
 }
 </style>
