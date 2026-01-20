@@ -2,6 +2,7 @@
   <div class="home">
     <div class="header">
       <h1>全球边缘节点实时测速面板</h1>
+      <el-button type="primary" :icon="Setting" @click="openConfig">告警配置</el-button>
     </div>
     <div class="content">
       <div class="sidebar-left">
@@ -12,6 +13,7 @@
           @test-progress="handleTestProgress"
           @interval-change="handleIntervalChange"
         />
+        <AlertPanel ref="alertPanelRef" />
         <NodeList 
           :nodes="nodesStore.allNodes" 
           :selected-node="nodesStore.selectedNode"
@@ -24,22 +26,33 @@
           :node-id="selectedChartNodeId"
           @node-change="handleChartNodeChange"
         />
+        <NodeComparison />
       </div>
     </div>
+    
+    <AlertConfig ref="alertConfigRef" />
   </div>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
+import { Setting } from '@element-plus/icons-vue'
 import MapContainer from '../components/MapContainer.vue'
 import NodeList from '../components/NodeList.vue'
 import SpeedTestControl from '../components/SpeedTestControl.vue'
 import LatencyChart from '../components/LatencyChart.vue'
+import AlertPanel from '../components/AlertPanel.vue'
+import AlertConfig from '../components/AlertConfig.vue'
+import NodeComparison from '../components/NodeComparison.vue'
 import { useNodesStore } from '../stores/nodes'
+import { detectAlerts, detectStatusChange } from '../services/alert'
+import { saveSpeedTestRecord } from '../services/storage'
 
 const nodesStore = useNodesStore()
 const mapContainerRef = ref(null)
+const alertPanelRef = ref(null)
+const alertConfigRef = ref(null)
 const refreshInterval = ref(10)
 const selectedChartNodeId = ref(null)
 
@@ -84,12 +97,56 @@ const handleTestComplete = (result) => {
 
 // 处理测速进度
 const handleTestProgress = (progress) => {
-  console.log('测速进度:', progress)
+  // 检测状态变化和告警
+  if (progress.nodeId) {
+    const node = nodesStore.getNode(progress.nodeId)
+    if (node) {
+      // 获取历史数据
+      const history = nodesStore.speedTestHistory.filter(h => h.nodeId === progress.nodeId)
+      
+      // 检测状态变化
+      const statusChanges = detectStatusChange(node)
+      if (statusChanges && alertPanelRef.value) {
+        statusChanges.forEach(change => {
+          alertPanelRef.value.addAlert({
+            type: 'status_change',
+            nodeId: node.id,
+            nodeName: node.name,
+            severity: change.severity,
+            message: `${node.name} 状态变化: ${change.from} → ${change.to}`,
+            timestamp: Date.now()
+          })
+        })
+      }
+      
+      // 检测告警
+      const alerts = detectAlerts(node, history)
+      if (alerts.length > 0 && alertPanelRef.value) {
+        alerts.forEach(alert => {
+          alertPanelRef.value.addAlert(alert)
+        })
+      }
+      
+      // 保存测速记录
+      saveSpeedTestRecord(node.id, {
+        latency: node.latency,
+        status: node.status,
+        load: node.load
+      })
+    }
+  }
 }
 
 // 处理间隔变更
 const handleIntervalChange = (newInterval) => {
   refreshInterval.value = newInterval
+}
+
+// 打开告警配置
+const openConfig = () => {
+  if (alertConfigRef.value) {
+    alertConfigRef.value.open()
+  }
 }
 </script>
 
@@ -105,6 +162,9 @@ const handleIntervalChange = (newInterval) => {
 }
 
 .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
 }
 
