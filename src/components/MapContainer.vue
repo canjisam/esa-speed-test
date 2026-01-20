@@ -164,84 +164,7 @@ const addNodeMarkers = () => {
       icon: createNodeIcon(node.status)
     }).addTo(map.value)
 
-    const statusColor = getStatusColor(node.status)
-    
-    marker.bindPopup(`
-      <div style="
-        padding: 0;
-        min-width: 220px;
-        font-size: 12px;
-        background: linear-gradient(180deg, rgba(17, 24, 39, 0.98) 0%, rgba(17, 24, 39, 0.95) 100%);
-        border-radius: 12px;
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-      ">
-        <div style="
-          padding: 14px 16px;
-          background: linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        ">
-          <div style="
-            width: 8px;
-            height: 8px;
-            background: ${statusColor};
-            border-radius: 50%;
-            box-shadow: 0 0 12px ${statusColor};
-            animation: statusPulse 2s ease-in-out infinite;
-          "></div>
-          <h3 style="
-            margin: 0;
-            font-size: 15px;
-            font-weight: 600;
-            color: #f9fafb;
-            text-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
-            flex: 1;
-          ">${node.name}</h3>
-        </div>
-        <div style="padding: 14px 16px;">
-          <div style="
-            display: grid;
-            grid-template-columns: 70px 1fr;
-            gap: 10px;
-            margin-bottom: 10px;
-          ">
-            <span style="color: #6b7280; font-size: 11px;">地区</span>
-            <span style="color: #9ca3af; font-size: 12px; font-weight: 500;">${node.region}</span>
-            
-            <span style="color: #6b7280; font-size: 11px;">国家</span>
-            <span style="color: #9ca3af; font-size: 12px; font-weight: 500;">${node.country}</span>
-            
-            <span style="color: #6b7280; font-size: 11px;">状态</span>
-            <span style="
-              color: ${statusColor};
-              font-size: 12px;
-              font-weight: 600;
-              text-shadow: 0 0 10px ${statusColor}80;
-            ">${getStatusText(node.status)}</span>
-            
-            <span style="color: #6b7280; font-size: 11px;">延迟</span>
-            <span style="
-              color: #00f5ff;
-              font-size: 16px;
-              font-weight: 700;
-              text-shadow: 0 0 15px rgba(0, 245, 255, 0.5);
-            ">${node.latency} ms</span>
-            
-            <span style="color: #6b7280; font-size: 11px;">负载</span>
-            <span style="
-              color: #3b82f6;
-              font-size: 16px;
-              font-weight: 700;
-              text-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-            ">${node.load}%</span>
-          </div>
-        </div>
-      </div>
-    `, {
+    marker.bindPopup(createPopupHTML(node), {
       maxWidth: 280,
       className: 'custom-popup'
     })
@@ -289,7 +212,88 @@ const getStatusText = (status) => {
   return texts[status] || '未知'
 }
 
-// 监听节点变化，实时更新标记
+// 生成 popup HTML 内容
+const createPopupHTML = (node) => {
+  const statusColor = getStatusColor(node.status)
+  return `
+    <div style="
+      padding: 0;
+      min-width: 220px;
+      font-size: 12px;
+      background: linear-gradient(180deg, rgba(17, 24, 39, 0.98) 0%, rgba(17, 24, 39, 0.95) 100%);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    ">
+      <div style="
+        padding: 14px 16px;
+        background: linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      ">
+        <div style="
+          width: 8px;
+          height: 8px;
+          background: ${statusColor};
+          border-radius: 50%;
+          box-shadow: 0 0 12px ${statusColor};
+          animation: statusPulse 2s ease-in-out infinite;
+        "></div>
+        <h3 style="
+          margin: 0;
+          font-size: 15px;
+          font-weight: 600;
+          color: #f9fafb;
+          text-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+          flex: 1;
+        ">${node.name}</h3>
+      </div>
+      <div style="padding: 14px 16px;">
+        <div style="
+          display: grid;
+          grid-template-columns: 70px 1fr;
+          gap: 10px;
+          margin-bottom: 10px;
+        ">
+          <span style="color: #6b7280; font-size: 11px;">地区</span>
+          <span style="color: #9ca3af; font-size: 12px; font-weight: 500;">${node.region}</span>
+          
+          <span style="color: #6b7280; font-size: 11px;">国家</span>
+          <span style="color: #9ca3af; font-size: 12px; font-weight: 500;">${node.country}</span>
+          
+          <span style="color: #6b7280; font-size: 11px;">状态</span>
+          <span style="
+            color: ${statusColor};
+            font-size: 12px;
+            font-weight: 600;
+            text-shadow: 0 0 10px ${statusColor}80;
+          ">${getStatusText(node.status)}</span>
+          
+          <span style="color: #6b7280; font-size: 11px;">延迟</span>
+          <span style="
+            color: #00f5ff;
+            font-size: 16px;
+            font-weight: 700;
+            text-shadow: 0 0 15px rgba(0, 245, 255, 0.5);
+          ">${node.latency} ms</span>
+          
+          <span style="color: #6b7280; font-size: 11px;">负载</span>
+          <span style="
+            color: #3b82f6;
+            font-size: 16px;
+            font-weight: 700;
+            text-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+          ">${node.load}%</span>
+        </div>
+      </div>
+    </div>
+  `
+}
+
+// 监听节点变化，实时更新标记和 popup 内容
 watch(() => nodesStore.allNodes, (newNodes) => {
   if (!map.value) return
   
@@ -298,6 +302,7 @@ watch(() => nodesStore.allNodes, (newNodes) => {
       const marker = markers.value[index]
       const isSelected = nodesStore.selectedNode?.id === node.id
       marker.setIcon(createNodeIcon(node.status, isSelected))
+      marker.setPopupContent(createPopupHTML(node))
     }
   })
 }, { deep: true })
