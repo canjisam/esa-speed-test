@@ -1,45 +1,17 @@
 /**
  * 测速服务
- * 支持ESA真实测速和模拟测速
+ * 使用阿里云真实节点进行测速
  */
 
-import { esaClient } from './esaClient.js'
-import { getESAConfig, validateESAConfig } from '../config/esaConfig.js'
+import { getAllNodes } from '../config/nodesConfig.js'
 
 // 测速配置
 const CONFIG = {
-  // 超时时间（毫秒）
   timeout: 5000,
-  // 测量次数
   measureCount: 3,
-  // 最大重试次数
   maxRetries: 2,
-  // 重试间隔（毫秒）
   retryDelay: 1000,
-  // 并发限制
   maxConcurrent: 5
-}
-
-// 检查是否使用真实ESA测速
-let useRealESA = false
-
-/**
- * 初始化测速服务
- * @param {Object} config - 配置对象
- */
-export function initSpeedTest(config = {}) {
-  const esaConfig = getESAConfig()
-  useRealESA = validateESAConfig(esaConfig)
-  
-  if (useRealESA) {
-    console.log('使用真实ESA测速')
-    esaClient.updateConfig({
-      ...esaConfig,
-      ...config
-    })
-  } else {
-    console.log('使用模拟测速（未配置ESA密钥）')
-  }
 }
 
 /**
@@ -155,26 +127,14 @@ async function measureWithRetry(url) {
 export async function testNode(node, onProgress) {
   onProgress?.({ nodeId: node.id, status: 'measuring' })
   
-  if (useRealESA && node.url) {
-    // 使用真实ESA测速
-    const result = await esaClient.testNode(node.id)
-    return {
-      nodeId: node.id,
-      latency: result.latency,
-      success: result.success,
-      error: result.error,
-      timestamp: result.timestamp
-    }
-  } else {
-    // 使用模拟测速
-    const result = generateMockSpeedTest(node)
-    return {
-      nodeId: node.id,
-      latency: result.latency,
-      success: result.success,
-      error: result.error,
-      timestamp: result.timestamp
-    }
+  const result = await measureWithRetry(node.url)
+  
+  return {
+    nodeId: node.id,
+    latency: result.latency,
+    success: result.success,
+    error: result.error,
+    timestamp: Date.now()
   }
 }
 
@@ -188,52 +148,32 @@ export async function batchSpeedTest(nodes, onProgress) {
   const results = []
   const total = nodes.length
   
-  if (useRealESA) {
-    // 使用ESA客户端并发测速
-    const nodeIds = nodes.map(n => n.id)
-    const esaResults = await esaClient.concurrentBatchTest(
-      nodeIds,
-      CONFIG.maxConcurrent,
-      (progress) => {
-        onProgress?.({
-          nodeId: progress.nodeId,
-          status: progress.error ? 'failed' : 'completed',
-          progress: progress.progress,
-          total: progress.total,
-          completed: progress.completed
-        })
-      }
-    )
-    return esaResults
-  } else {
-    // 使用模拟测速
-    for (let i = 0; i < total; i++) {
-      const node = nodes[i]
-      onProgress?.({
-        nodeId: node.id,
-        status: 'measuring',
-        progress: i / total,
-        total,
-        completed: i
-      })
-      
-      const result = generateMockSpeedTest(node)
-      results.push(result)
-      
-      onProgress?.({
-        nodeId: node.id,
-        status: 'completed',
-        progress: (i + 1) / total,
-        total,
-        completed: i + 1
-      })
-      
-      // 模拟网络延迟
-      await new Promise(resolve => setTimeout(resolve, 50))
-    }
+  for (let i = 0; i < total; i++) {
+    const node = nodes[i]
+    onProgress?.({
+      nodeId: node.id,
+      status: 'measuring',
+      progress: i / total,
+      total,
+      completed: i
+    })
     
-    return results
+    const result = await testNode(node)
+    results.push(result)
+    
+    onProgress?.({
+      nodeId: node.id,
+      status: 'completed',
+      progress: (i + 1) / total,
+      total,
+      completed: i + 1
+    })
+    
+    // 模拟网络延迟
+    await new Promise(resolve => setTimeout(resolve, 50))
   }
+  
+  return results
 }
 
 /**
@@ -274,20 +214,17 @@ export function generateMockSpeedTest(node) {
 }
 
 /**
- * 检查是否使用真实ESA测速
- * @returns {boolean}
- */
-export function isUsingRealESA() {
-  return useRealESA
-}
-
-/**
  * 获取当前配置
  * @returns {Object}
  */
 export function getConfig() {
-  return {
-    ...CONFIG,
-    useRealESA
-  }
+  return { ...CONFIG }
+}
+
+/**
+ * 获取所有节点
+ * @returns {Array}
+ */
+export function getAllTestNodes() {
+  return getAllNodes()
 }
