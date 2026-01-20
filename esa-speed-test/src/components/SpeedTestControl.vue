@@ -210,35 +210,41 @@ onUnmounted(() => {
 <style scoped>
 .speed-test-control {
   background: white;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  padding: 12px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+  height: 30%;
+  display: flex;
+  flex-direction: column;
 }
 
 .control-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
 }
 
 .control-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #333;
 }
 
 .control-info {
-  margin-bottom: 16px;
+  flex: 1;
+  margin-bottom: 10px;
+  overflow-y: auto;
 }
 
 .info-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
-  font-size: 14px;
+  margin-bottom: 6px;
+  font-size: 12px;
 }
 
 .info-label {
@@ -252,10 +258,13 @@ onUnmounted(() => {
 
 .control-actions {
   display: flex;
-  gap: 10px;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .control-actions .el-button {
   flex: 1;
+  padding: 8px 12px;
+  font-size: 12px;
 }
 </style>

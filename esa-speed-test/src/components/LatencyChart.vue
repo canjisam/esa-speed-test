@@ -96,9 +96,9 @@ const updateChart = () => {
       formatter: (params) => {
         const param = params[0]
         return `
-          <div style="padding: 8px;">
-            <div style="margin-bottom: 4px; font-weight: 600;">${param.name}</div>
-            <div>延迟: <strong>${param.value} ms</strong></div>
+          <div style="padding: 10px;">
+            <div style="margin-bottom: 4px; font-weight: 600; font-size: 12px;">${param.name}</div>
+            <div style="font-size: 12px;">延迟: <strong style="font-size: 14px;">${param.value} ms</strong></div>
           </div>
         `
       }
@@ -115,18 +115,26 @@ const updateChart = () => {
       data: times,
       axisLabel: {
         rotate: 45,
-        fontSize: 10
+        fontSize: 10,
+        color: '#666'
       }
     },
     yAxis: {
       type: 'value',
       name: '延迟 (ms)',
+      nameTextStyle: {
+        fontSize: 11,
+        fontWeight: 600
+      },
       axisLabel: {
-        formatter: '{value} ms'
+        formatter: '{value} ms',
+        fontSize: 10,
+        color: '#666'
       },
       splitLine: {
         lineStyle: {
-          type: 'dashed'
+          type: 'dashed',
+          color: '#e8e8e8'
         }
       }
     },
@@ -154,12 +162,20 @@ const updateChart = () => {
         },
         markLine: {
           silent: true,
+          lineStyle: {
+            width: 2
+          },
           data: [
             { yAxis: 150, name: '拥堵阈值', lineStyle: { color: '#faad14', type: 'dashed' } },
             { yAxis: 300, name: '离线阈值', lineStyle: { color: '#ff4d4f', type: 'dashed' } }
           ]
         },
         markPoint: {
+          symbolSize: 40,
+          label: {
+            fontSize: 10,
+            fontWeight: 600
+          },
           data: [
             { type: 'max', name: '最大值' },
             { type: 'min', name: '最小值' }
@@ -173,6 +189,7 @@ const updateChart = () => {
       text: `平均: ${avgLatency}ms | 最大: ${maxLatency}ms | 最小: ${minLatency}ms`,
       textStyle: {
         fontSize: 12,
+        fontWeight: 600,
         color: '#666'
       }
     }
@@ -231,50 +248,57 @@ onUnmounted(() => {
 <style scoped>
 .latency-chart {
   background: white;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  padding: 12px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+  height: 70%;
+  display: flex;
+  flex-direction: column;
 }
 
 .chart-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
 }
 
 .chart-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 600;
   color: #333;
 }
 
 .chart-container {
   width: 100%;
-  height: 300px;
+  height: 100%;
+  min-height: 200px;
 }
 
 .chart-legend {
   display: flex;
   justify-content: center;
-  gap: 24px;
-  margin-top: 12px;
-  padding-top: 12px;
+  gap: 12px;
+  margin-top: 6px;
+  padding-top: 6px;
   border-top: 1px solid #e8e8e8;
+  flex-shrink: 0;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 4px;
+  font-size: 11px;
   color: #666;
+  font-weight: 500;
 }
 
 .legend-color {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 2px;
 }
 

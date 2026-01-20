@@ -142,23 +142,23 @@ const addNodeMarkers = () => {
 
     // 添加弹窗
     marker.bindPopup(`
-      <div style="padding: 10px; min-width: 200px;">
-        <h3 style="margin: 0 0 10px 0; color: #333;">${node.name}</h3>
-        <p style="margin: 5px 0; color: #666;">
+      <div style="padding: 8px; min-width: 180px; font-size: 12px;">
+        <h3 style="margin: 0 0 8px 0; color: #333; font-size: 13px; font-weight: 600;">${node.name}</h3>
+        <p style="margin: 4px 0; color: #666;">
           <strong>地区:</strong> ${node.region}
         </p>
-        <p style="margin: 5px 0; color: #666;">
+        <p style="margin: 4px 0; color: #666;">
           <strong>国家:</strong> ${node.country}
         </p>
-        <p style="margin: 5px 0; color: #666;">
+        <p style="margin: 4px 0; color: #666;">
           <strong>状态:</strong> 
           <span style="color: ${getStatusColor(node.status)}">${getStatusText(node.status)}</span>
         </p>
-        <p style="margin: 5px 0; color: #666;">
-          <strong>延迟:</strong> ${node.latency} ms
+        <p style="margin: 4px 0; color: #666;">
+          <strong>延迟:</strong> <span style="font-size: 13px; font-weight: 600;">${node.latency} ms</span>
         </p>
-        <p style="margin: 5px 0; color: #666;">
-          <strong>负载:</strong> ${node.load}%
+        <p style="margin: 4px 0; color: #666;">
+          <strong>负载:</strong> <span style="font-size: 13px; font-weight: 600;">${node.load}%</span>
         </p>
       </div>
     `)
@@ -223,23 +223,23 @@ watch(() => nodesStore.allNodes, (newNodes) => {
       
       // 更新弹窗内容
       marker.setPopupContent(`
-        <div style="padding: 10px; min-width: 200px;">
-          <h3 style="margin: 0 0 10px 0; color: #333;">${node.name}</h3>
-          <p style="margin: 5px 0; color: #666;">
+        <div style="padding: 8px; min-width: 180px; font-size: 12px;">
+          <h3 style="margin: 0 0 8px 0; color: #333; font-size: 13px; font-weight: 600;">${node.name}</h3>
+          <p style="margin: 4px 0; color: #666;">
             <strong>地区:</strong> ${node.region}
           </p>
-          <p style="margin: 5px 0; color: #666;">
+          <p style="margin: 4px 0; color: #666;">
             <strong>国家:</strong> ${node.country}
           </p>
-          <p style="margin: 5px 0; color: #666;">
+          <p style="margin: 4px 0; color: #666;">
             <strong>状态:</strong> 
             <span style="color: ${getStatusColor(node.status)}">${getStatusText(node.status)}</span>
           </p>
-          <p style="margin: 5px 0; color: #666;">
-            <strong>延迟:</strong> ${node.latency} ms
+          <p style="margin: 4px 0; color: #666;">
+            <strong>延迟:</strong> <span style="font-size: 13px; font-weight: 600;">${node.latency} ms</span>
           </p>
-          <p style="margin: 5px 0; color: #666;">
-            <strong>负载:</strong> ${node.load}%
+          <p style="margin: 4px 0; color: #666;">
+            <strong>负载:</strong> <span style="font-size: 13px; font-weight: 600;">${node.load}%</span>
           </p>
         </div>
       `)
@@ -266,9 +266,10 @@ onUnmounted(() => {
 <style scoped>
 .map-container {
   flex: 1;
-  border-radius: 8px;
+  min-height: 400px;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
   background: white;
   position: relative;
 }
@@ -285,7 +286,7 @@ onUnmounted(() => {
   height: 40px;
   border-radius: 50%;
   background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -296,7 +297,7 @@ onUnmounted(() => {
 
 .theme-toggle:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.3);
 }
 
 .theme-toggle .el-icon {
@@ -310,12 +311,13 @@ onUnmounted(() => {
 }
 
 :deep(.leaflet-popup-content-wrapper) {
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.18);
 }
 
 :deep(.leaflet-popup-content) {
   margin: 0;
+  font-size: 12px;
 }
 
 .dark-theme :deep(.leaflet-popup-content-wrapper) {

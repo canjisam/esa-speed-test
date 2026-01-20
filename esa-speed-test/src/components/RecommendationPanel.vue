@@ -12,90 +12,76 @@
           <el-icon><Location /></el-icon>
           <span>您的位置: {{ userLocation.city }}, {{ userLocation.country }}</span>
         </div>
-        <div class="location-details">
-          <span>IP: {{ userLocation.ip }}</span>
-          <span>经纬度: {{ userLocation.latitude.toFixed(2) }}°N, {{ userLocation.longitude.toFixed(2) }}°E</span>
-        </div>
       </div>
       
-      <!-- 推荐理由 -->
-      <div class="recommendation-reason">
-        <el-alert
-          :title="recommendations.recommendationReason"
-          type="success"
-          :closable="false"
-          show-icon
-        />
-      </div>
-      
-      <!-- 推荐列表 -->
-      <div class="recommendation-list">
-        <div
-          v-for="(rec, index) in recommendations.recommendations"
-          :key="rec.nodeId"
-          class="recommendation-item"
-          :class="{ 'top-recommendation': index === 0 }"
+      <!-- 推荐轮播图 -->
+      <div class="carousel-container">
+        <el-carousel
+          :interval="5000"
+          type="card"
+          height="150px"
+          indicator-position="outside"
         >
-          <div class="recommendation-rank">
-            <span v-if="index === 0">🥇</span>
-            <span v-else-if="index === 1">🥈</span>
-            <span v-else-if="index === 2">🥉</span>
-            <span v-else>{{ index + 1 }}</span>
-          </div>
-          
-          <div class="recommendation-info">
-            <div class="recommendation-name">{{ rec.nodeName }}</div>
-            <div class="recommendation-score">
-              <span class="score-label">推荐得分:</span>
-              <span class="score-value">{{ rec.totalScore }}分</span>
-            </div>
-          </div>
-          
-          <div class="recommendation-details">
-            <div class="detail-item">
-              <span class="detail-label">延迟:</span>
-              <span class="detail-value" :class="getLatencyClass(rec.latency)">{{ rec.latency }}ms</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">距离:</span>
-              <span class="detail-value">{{ rec.distance }}km</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">稳定性:</span>
-              <span class="detail-value">{{ rec.stability }}分</span>
-            </div>
-          </div>
-          
-          <div class="recommendation-reasons">
+          <el-carousel-item
+            v-for="(rec, index) in recommendations.recommendations"
+            :key="rec.nodeId"
+            class="carousel-item"
+          >
             <div
-              v-for="reason in rec.reasons"
-              :key="reason.factor"
-              class="reason-item"
+              class="recommendation-card"
+              :class="{ 'top-recommendation': index === 0 }"
+              @mouseenter="hoveredIndex = index"
+              @mouseleave="hoveredIndex = -1"
             >
-              <span class="reason-factor">{{ reason.factor }}:</span>
-              <span class="reason-value">{{ reason.value }}</span>
-              <span class="reason-desc">({{ reason.reason }})</span>
+              <!-- 基础信息 -->
+              <div class="card-basic">
+                <div class="card-rank">
+                  <span v-if="index === 0">🥇</span>
+                  <span v-else-if="index === 1">🥈</span>
+                  <span v-else-if="index === 2">🥉</span>
+                  <span v-else>{{ index + 1 }}</span>
+                </div>
+                <div class="card-title">{{ rec.nodeName }}</div>
+                <div class="card-score">
+                  <span class="score-label">推荐得分:</span>
+                  <span class="score-value">{{ rec.totalScore }}分</span>
+                </div>
+              </div>
+              
+              <!-- 悬停显示的详细信息 -->
+              <div class="card-details" :class="{ 'visible': hoveredIndex === index }">
+                <div class="detail-reasons">
+                  <div
+                    v-for="reason in rec.reasons"
+                    :key="reason.factor"
+                    class="reason-item"
+                  >
+                    <span class="reason-factor">{{ reason.factor }}:</span>
+                    <span class="reason-value">{{ reason.value }}</span>
+                    <span class="reason-desc">({{ reason.reason }})</span>
+                  </div>
+                </div>
+                <div class="card-actions">
+                  <el-button
+                    size="small"
+                    type="primary"
+                    @click="handleConnect(rec)"
+                    :icon="Connection"
+                  >
+                    连接
+                  </el-button>
+                  <el-button
+                    size="small"
+                    @click="handleViewDetails(rec)"
+                    :icon="View"
+                  >
+                    详情
+                  </el-button>
+                </div>
+              </div>
             </div>
-          </div>
-          
-          <div class="recommendation-actions">
-            <el-button
-              size="small"
-              type="primary"
-              @click="handleConnect(rec)"
-              :icon="Connection"
-            >
-              连接
-            </el-button>
-            <el-button
-              size="small"
-              @click="handleViewDetails(rec)"
-              :icon="View"
-            >
-              详情
-            </el-button>
-          </div>
-        </div>
+          </el-carousel-item>
+        </el-carousel>
       </div>
     </div>
     
@@ -115,6 +101,7 @@ import { getUserLocation, recommendBestNode } from '../services/recommendation'
 const nodesStore = useNodesStore()
 const recommendations = ref(null)
 const userLocation = ref({})
+const hoveredIndex = ref(-1)
 
 // 获取延迟样式类
 const getLatencyClass = (latency) => {
@@ -173,134 +160,169 @@ onMounted(() => {
 <style scoped>
 .recommendation-panel {
   background: white;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  padding: 8px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+  height: 30%;
+  display: flex;
+  flex-direction: column;
 }
 
 .recommendation-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 6px;
+  flex-shrink: 0;
 }
 
 .recommendation-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 600;
   color: #333;
 }
 
 .recommendation-content {
-  max-height: 600px;
-  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .user-location {
-  padding: 12px;
+  padding: 4px 6px;
   background: #f0f9ff;
-  border-radius: 6px;
-  margin-bottom: 16px;
+  border-radius: 3px;
+  margin-bottom: 4px;
+  flex-shrink: 0;
 }
 
 .location-info {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  gap: 3px;
+  font-size: 10px;
   color: #333;
-  margin-bottom: 8px;
 }
 
-.location-details {
+.carousel-container {
+  flex: 1;
+  min-height: 0;
+}
+
+.carousel-item {
+  height: 100%;
   display: flex;
-  gap: 16px;
-  font-size: 12px;
-  color: #666;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
 }
 
-.recommendation-reason {
-  margin-bottom: 16px;
-}
-
-.recommendation-list {
+.recommendation-card {
+  width: 100%;
+  height: 100%;
+  background: white;
+  border-radius: 6px;
+  padding: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid #e8e8e8;
 }
 
-.recommendation-item {
-  padding: 16px;
-  border: 2px solid #e8e8e8;
-  border-radius: 8px;
-  transition: all 0.3s;
-}
-
-.recommendation-item:hover {
+.recommendation-card:hover {
   border-color: #1890ff;
-  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(24, 144, 255, 0.2);
 }
 
-.recommendation-item.top-recommendation {
+.recommendation-card.top-recommendation {
   border-color: #52c41a;
   background: linear-gradient(135deg, #f6ffed 0%, #ffffff 100%);
 }
 
-.recommendation-rank {
-  font-size: 24px;
-  margin-bottom: 8px;
+.recommendation-card.top-recommendation:hover {
+  border-color: #52c41a;
+  box-shadow: 0 3px 10px rgba(82, 196, 26, 0.2);
 }
 
-.recommendation-info {
+.card-basic {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  margin-bottom: 12px;
+  text-align: center;
 }
 
-.recommendation-name {
-  font-size: 16px;
+.card-rank {
+  font-size: 18px;
+  margin-bottom: 2px;
+}
+
+.card-title {
+  font-size: 12px;
   font-weight: 600;
   color: #333;
+  margin-bottom: 2px;
 }
 
-.recommendation-score {
-  font-size: 14px;
+.card-score {
+  font-size: 10px;
   color: #666;
 }
 
 .score-label {
-  margin-right: 4px;
+  margin-right: 2px;
 }
 
 .score-value {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
   color: #52c41a;
 }
 
-.recommendation-details {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 12px;
+.card-details {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.98);
   padding: 8px;
-  background: #f5f5f5;
-  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
 }
 
-.detail-item {
-  font-size: 12px;
+.card-details.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
 }
 
 .detail-label {
   color: #666;
-  margin-right: 4px;
+  font-weight: 500;
 }
 
 .detail-value {
   font-weight: 600;
   color: #333;
+  font-size: 12px;
 }
 
 .latency-excellent {
@@ -319,60 +341,73 @@ onMounted(() => {
   color: #ff4d4f;
 }
 
-.recommendation-reasons {
+.detail-reasons {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
+  gap: 3px;
+  padding: 6px;
+  background: #f5f5f5;
+  border-radius: 3px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .reason-item {
-  font-size: 12px;
-  color: #666;
+  font-size: 10px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
 }
 
 .reason-factor {
   font-weight: 600;
   color: #333;
-  margin-right: 4px;
+  min-width: 40px;
 }
 
 .reason-value {
   color: #1890ff;
-  margin-right: 4px;
+  font-weight: 500;
 }
 
 .reason-desc {
-  color: #999;
+  color: #666;
+  font-size: 9px;
 }
 
-.recommendation-actions {
+.card-actions {
   display: flex;
-  gap: 8px;
+  gap: 3px;
+  margin-top: auto;
+  padding-top: 4px;
+  flex-shrink: 0;
+}
+
+.card-actions .el-button {
+  padding: 4px 8px;
+  height: 24px;
+  font-size: 10px;
 }
 
 .empty-state {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 200px;
+  min-height: 100px;
 }
 
-/* 滚动条样式 */
-.recommendation-content::-webkit-scrollbar {
+/* 轮播图指示器样式 */
+:deep(.el-carousel__indicators) {
+  transform: translateY(4px);
+}
+
+:deep(.el-carousel__indicator) {
+  padding: 3px 2px;
+}
+
+:deep(.el-carousel__button) {
   width: 6px;
-}
-
-.recommendation-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-.recommendation-content::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 3px;
-}
-
-.recommendation-content::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  height: 6px;
+  border-radius: 50%;
 }
 </style>

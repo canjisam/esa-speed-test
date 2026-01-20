@@ -155,18 +155,18 @@ const handleNodeClick = (node) => {
 
 <style scoped>
 .node-list-container {
-  width: 320px;
-  height: 100%;
+  width: 100%;
+  height: 70%;
   display: flex;
   flex-direction: column;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
 .filter-section {
-  padding: 16px;
+  padding: 10px;
   border-bottom: 1px solid #e8e8e8;
   display: flex;
   align-items: center;
@@ -175,35 +175,35 @@ const handleNodeClick = (node) => {
 .node-list {
   flex: 1;
   overflow-y: auto;
-  padding: 8px;
+  padding: 6px;
 }
 
 .node-item {
   display: flex;
   align-items: center;
-  padding: 12px;
-  margin-bottom: 8px;
+  padding: 8px;
+  margin-bottom: 6px;
   background: #f5f5f5;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s;
 }
 
 .node-item:hover {
   background: #e6f7ff;
-  transform: translateX(4px);
+  transform: translateX(2px);
 }
 
 .node-item.active {
   background: #e6f7ff;
-  border: 2px solid #1890ff;
+  border: 1px solid #1890ff;
 }
 
 .node-status-indicator {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  margin-right: 12px;
+  margin-right: 8px;
   flex-shrink: 0;
 }
 
@@ -213,16 +213,16 @@ const handleNodeClick = (node) => {
 }
 
 .node-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: #333;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .node-details {
   display: flex;
-  gap: 12px;
-  font-size: 12px;
+  gap: 8px;
+  font-size: 11px;
   color: #666;
 }
 
@@ -255,16 +255,16 @@ const handleNodeClick = (node) => {
 }
 
 .node-status-badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+  padding: 3px 6px;
+  border-radius: 3px;
+  font-size: 11px;
   color: white;
   font-weight: 500;
   flex-shrink: 0;
 }
 
 .statistics {
-  padding: 16px;
+  padding: 10px;
   border-top: 1px solid #e8e8e8;
   display: flex;
   justify-content: space-around;
@@ -278,13 +278,13 @@ const handleNodeClick = (node) => {
 }
 
 .stat-label {
-  font-size: 12px;
+  font-size: 11px;
   color: #666;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .stat-value {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: #333;
 }
