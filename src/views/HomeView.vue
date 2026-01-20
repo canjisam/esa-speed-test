@@ -12,6 +12,18 @@
         <span class="title-glow"></span>
       </h1>
       <div class="header-actions">
+        <el-select
+          v-model="selectedLocation"
+          placeholder="选择位置"
+          @change="handleLocationChange"
+          style="width: 140px; margin-right: 10px;"
+        >
+          <el-option label="中国" value="china" />
+          <el-option label="美国" value="usa" />
+          <el-option label="日本" value="japan" />
+          <el-option label="欧洲" value="europe" />
+          <el-option label="新加坡" value="singapore" />
+        </el-select>
         <el-button :icon="Bell" @click="openAlertPanel" class="header-btn">
           告警通知
           <el-badge v-if="alertCount > 0" :value="alertCount" class="alert-badge" />
@@ -82,7 +94,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Setting, Bell, Document } from '@element-plus/icons-vue'
 import MapContainer from '../components/MapContainer.vue'
@@ -96,6 +108,7 @@ import ReportPanel from '../components/ReportPanel.vue'
 import { useNodesStore } from '../stores/nodes'
 import { detectAlerts, detectStatusChange } from '../services/alert'
 import { saveSpeedTestRecord } from '../services/storage'
+import { getUserLocation } from '../services/recommendation'
 
 const nodesStore = useNodesStore()
 const mapContainerRef = ref(null)
@@ -107,6 +120,16 @@ const alertDialogVisible = ref(false)
 const reportDialogVisible = ref(false)
 const alertCount = computed(() => alertPanelRef.value?.alerts?.length || 0)
 const isFooterCollapsed = ref(false)
+const selectedLocation = ref('china')
+
+// 预定义位置
+const locations = {
+  china: { lat: 35.8617, lng: 104.1954, name: '中国' },
+  usa: { lat: 37.0902, lng: -95.7129, name: '美国' },
+  japan: { lat: 36.2048, lng: 138.2529, name: '日本' },
+  europe: { lat: 54.5260, lng: 15.2551, name: '欧洲' },
+  singapore: { lat: 1.3521, lng: 103.8198, name: '新加坡' }
+}
 
 // 监听选中的节点，同步到图表
 watch(() => nodesStore.selectedNode, (node) => {
@@ -215,6 +238,45 @@ const openReportPanel = () => {
 const toggleFooter = () => {
   isFooterCollapsed.value = !isFooterCollapsed.value
 }
+
+// 处理位置变化
+const handleLocationChange = (locationKey) => {
+  const location = locations[locationKey]
+  if (location && mapContainerRef.value && mapContainerRef.value.setUserLocation) {
+    mapContainerRef.value.setUserLocation(location.lat, location.lng, location.name)
+    ElMessage.success(`已切换到 ${location.name}`)
+  }
+}
+
+// 组件挂载时设置初始位置
+onMounted(async () => {
+  try {
+    // 使用 IP 定位获取用户真实位置
+    const userLoc = await getUserLocation()
+    
+    if (userLoc && mapContainerRef.value && mapContainerRef.value.setUserLocation) {
+      const locationName = userLoc.city ? `${userLoc.city}, ${userLoc.country}` : userLoc.country || '我的位置'
+      mapContainerRef.value.setUserLocation(userLoc.latitude, userLoc.longitude, locationName)
+      
+      // 更新选择器的值（如果匹配预设位置）
+      const matchedLocation = Object.entries(locations).find(([key, loc]) => 
+        Math.abs(loc.lat - userLoc.latitude) < 5 && Math.abs(loc.lng - userLoc.longitude) < 5
+      )
+      if (matchedLocation) {
+        selectedLocation.value = matchedLocation[0]
+      }
+      
+      console.log('已定位到:', locationName, userLoc)
+    }
+  } catch (error) {
+    console.error('获取用户位置失败，使用默认位置:', error)
+    // 失败时使用默认位置
+    const initialLocation = locations[selectedLocation.value]
+    if (initialLocation && mapContainerRef.value && mapContainerRef.value.setUserLocation) {
+      mapContainerRef.value.setUserLocation(initialLocation.lat, initialLocation.lng, initialLocation.name)
+    }
+  }
+})
 </script>
 
 <style scoped>
