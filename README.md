@@ -1,6 +1,8 @@
-# 阿里云节点实时测速面板
+# ESA Speed Test - 阿里云节点实时测速面板
 
 > 基于 Vue 3 + Vite 构建的科技风格全球边缘节点实时测速面板，使用阿里云 OSS 真实节点进行测速。
+
+**在线演示**: https://canjisam.github.io/esa-speed-test/
 
 ![Demo](https://img.shields.io/badge/demo-online-brightgreen)
 ![Vue](https://img.shields.io/badge/Vue-3.5-4FC08D)
@@ -259,3 +261,11 @@ MIT License
 ## 🤝 贡献
 
 欢迎提交 Issue 和 Pull Request！
+
+---
+
+## © 版权信息
+
+© 2025 canjisam. All rights reserved.
+
+本项目采用 MIT 许可证开源。

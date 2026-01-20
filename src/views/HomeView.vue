@@ -63,6 +63,16 @@
     >
       <ReportPanel />
     </el-dialog>
+    
+    <!-- 版权信息 -->
+    <div class="footer">
+      <p>© 2025 canjisam. All rights reserved.</p>
+      <p class="footer-links">
+        <a href="https://github.com/canjisam/esa-speed-test" target="_blank">GitHub</a>
+        <span>|</span>
+        <a href="https://canjisam.github.io/esa-speed-test/" target="_blank">在线演示</a>
+      </p>
+    </div>
   </div>
 </template>
 
@@ -496,5 +506,52 @@ h1 {
   .sidebar-right {
     height: 30%;
   }
+}
+
+/* 版权信息 */
+.footer {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-md) var(--spacing-xl);
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
+  transition: all var(--transition-normal);
+}
+
+.footer:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(17, 24, 39, 0.6);
+}
+
+.footer p {
+  margin: 4px 0;
+}
+
+.footer-links {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.footer-links a {
+  color: var(--neon-cyan);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  padding: 0 4px;
+}
+
+.footer-links a:hover {
+  color: var(--neon-blue);
+  text-shadow: 0 0 10px var(--neon-cyan-glow);
+}
+
+.footer-links span {
+  margin: 0 8px;
+  color: rgba(255, 255, 255, 0.3);
 }
 </style>
