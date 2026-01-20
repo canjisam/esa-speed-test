@@ -88,7 +88,7 @@ onMounted(() => {
   border-radius: var(--border-radius-md);
   padding: 10px;
   box-shadow: var(--shadow-sm), var(--shadow-glow);
-  height: 27%;
+  height: 30%;
   display: flex;
   flex-direction: column;
   backdrop-filter: blur(20px);
