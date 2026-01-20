@@ -2,7 +2,9 @@
   <div class="home">
     <div class="header">
       <h1>全球边缘节点实时测速面板</h1>
-      <el-button type="primary" :icon="Setting" @click="openConfig">告警配置</el-button>
+      <div class="header-actions">
+        <el-button type="primary" :icon="Setting" @click="openConfig">告警配置</el-button>
+      </div>
     </div>
     <div class="content">
       <div class="sidebar-left">
@@ -27,6 +29,8 @@
           @node-change="handleChartNodeChange"
         />
         <NodeComparison />
+        <RecommendationPanel />
+        <ReportPanel />
       </div>
     </div>
     
@@ -45,6 +49,8 @@ import LatencyChart from '../components/LatencyChart.vue'
 import AlertPanel from '../components/AlertPanel.vue'
 import AlertConfig from '../components/AlertConfig.vue'
 import NodeComparison from '../components/NodeComparison.vue'
+import RecommendationPanel from '../components/RecommendationPanel.vue'
+import ReportPanel from '../components/ReportPanel.vue'
 import { useNodesStore } from '../stores/nodes'
 import { detectAlerts, detectStatusChange } from '../services/alert'
 import { saveSpeedTestRecord } from '../services/storage'
@@ -173,6 +179,11 @@ h1 {
   font-size: 24px;
   color: #333;
   font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
 }
 
 .content {
