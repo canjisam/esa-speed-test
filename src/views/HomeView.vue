@@ -65,13 +65,18 @@
     </el-dialog>
     
     <!-- 版权信息 -->
-    <div class="footer">
-      <p>© 2025 canjisam. All rights reserved.</p>
-      <p class="footer-links">
-        <a href="https://github.com/canjisam/esa-speed-test" target="_blank">GitHub</a>
-        <span>|</span>
-        <a href="https://canjisam.github.io/esa-speed-test/" target="_blank">在线演示</a>
-      </p>
+    <div class="footer" :class="{ 'footer-collapsed': isFooterCollapsed }">
+      <div class="footer-toggle" @click="toggleFooter">
+        <span class="toggle-icon">{{ isFooterCollapsed ? '▲' : '▼' }}</span>
+      </div>
+      <div class="footer-content" v-show="!isFooterCollapsed">
+        <p>© 2025 canjisam. All rights reserved.</p>
+        <p class="footer-links">
+          <a href="https://github.com/canjisam/esa-speed-test" target="_blank">GitHub</a>
+          <span>|</span>
+          <a href="https://canjisam.github.io/esa-speed-test/" target="_blank">在线演示</a>
+        </p>
+      </div>
     </div>
   </div>
 </template>
@@ -101,6 +106,7 @@ const selectedChartNodeId = ref(null)
 const alertDialogVisible = ref(false)
 const reportDialogVisible = ref(false)
 const alertCount = computed(() => alertPanelRef.value?.alerts?.length || 0)
+const isFooterCollapsed = ref(false)
 
 // 监听选中的节点，同步到图表
 watch(() => nodesStore.selectedNode, (node) => {
@@ -203,6 +209,11 @@ const openAlertPanel = () => {
 // 打开测速报告面板
 const openReportPanel = () => {
   reportDialogVisible.value = true
+}
+
+// 切换版权信息显示
+const toggleFooter = () => {
+  isFooterCollapsed.value = !isFooterCollapsed.value
 }
 </script>
 
@@ -510,48 +521,88 @@ h1 {
 
 /* 版权信息 */
 .footer {
-  margin-top: var(--spacing-lg);
-  padding: var(--spacing-md) var(--spacing-xl);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 20px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 13px;
-  background: var(--bg-glass);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-md);
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+  background:transparent;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
-  position: relative;
   z-index: 1;
   transition: all var(--transition-normal);
+
+}
+
+.footer-collapsed {
+  padding: 4px 20px;
+  height: 1px;
+  cursor: pointer;
+  background: transparent;
 }
 
 .footer:hover {
-  border-color: rgba(255, 255, 255, 0.1);
-  background: rgba(17, 24, 39, 0.6);
+  background: rgba(10, 14, 23, 0.95);
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.footer-toggle {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 50%;
+  margin-top: -8px;
+  cursor: pointer;
+  padding: 4px 12px;
+  border-radius: 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  transition: all var(--transition-fast);
+}
+
+.footer-toggle:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+}
+
+.toggle-icon {
+  color: var(--neon-cyan);
+  font-size: 12px;
+  display: block;
+  line-height: 1;
+}
+
+.footer-content {
+  transition: all var(--transition-normal);
 }
 
 .footer p {
-  margin: 4px 0;
+  margin: 2px 0;
 }
 
 .footer-links {
-  margin-top: 6px;
-  font-size: 12px;
+  margin-top: 2px;
+  font-size: 10px;
 }
 
 .footer-links a {
-  color: var(--neon-cyan);
+  color: rgba(0, 245, 255, 0.7);
   text-decoration: none;
   transition: all var(--transition-fast);
-  padding: 0 4px;
+  padding: 0 3px;
 }
 
 .footer-links a:hover {
-  color: var(--neon-blue);
-  text-shadow: 0 0 10px var(--neon-cyan-glow);
+  color: var(--neon-cyan);
+  text-shadow: 0 0 8px rgba(0, 245, 255, 0.5);
 }
 
 .footer-links span {
-  margin: 0 8px;
-  color: rgba(255, 255, 255, 0.3);
+  margin: 0 6px;
+  color: rgba(255, 255, 255, 0.2);
 }
 </style>
