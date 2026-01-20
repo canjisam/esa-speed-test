@@ -9,7 +9,7 @@
           <el-option label="最近7天" :value="7" />
           <el-option label="最近30天" :value="30" />
         </el-select>
-        <el-button size="small" @click="generateReport" :icon="Refresh">生成报告</el-button>
+        <el-button size="small" @click="handleGenerateReport" :icon="Refresh">生成报告</el-button>
         <el-button size="small" type="primary" @click="exportReport" :icon="Download">导出CSV</el-button>
       </div>
     </div>
@@ -137,7 +137,7 @@ const getLatencyClass = (latency) => {
 }
 
 // 生成报告
-const generateReport = () => {
+const handleGenerateReport = () => {
   try {
     report.value = generateReport(nodesStore.allNodes, selectedDays.value)
     ElMessage.success('报告生成成功')
