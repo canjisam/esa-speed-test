@@ -45,36 +45,53 @@
       
       <el-button 
         size="small"
-        @click="handleRefreshIntervalChange"
+        @click="toggleIntervalSettings"
+        :class="{ 'active': showIntervalSettings }"
       >
         调整间隔
+        <el-icon class="arrow-icon" :class="{ 'rotate': showIntervalSettings }">
+          <ArrowDown />
+        </el-icon>
       </el-button>
     </div>
 
-    <el-dialog
-      v-model="showIntervalDialog"
-      title="设置刷新间隔"
-      width="280px"
-    >
-      <el-slider
-        v-model="tempRefreshInterval"
-        :min="5"
-        :max="60"
-        :step="5"
-        :marks="{ 5: '5s', 30: '30s', 60: '60s' }"
-      />
-      <template #footer>
-        <div class="dialog-actions">
-          <el-button size="small" @click="showIntervalDialog = false">取消</el-button>
-          <el-button size="small" type="primary" @click="confirmIntervalChange">确定</el-button>
+    <transition name="expand">
+      <div v-if="showIntervalSettings" class="interval-settings">
+        <div class="current-value">
+          <span class="value-label">{{ tempRefreshInterval }}s</span>
         </div>
-      </template>
-    </el-dialog>
+        
+        <div class="slider-container">
+          <el-slider
+            v-model="tempRefreshInterval"
+            :min="5"
+            :max="60"
+            :step="5"
+            :show-tooltip="false"
+            size="small"
+            @change="handleSliderChange"
+          />
+        </div>
+        
+        <div class="preset-buttons">
+          <el-button
+            v-for="preset in presets"
+            :key="preset.value"
+            size="small"
+            :type="tempRefreshInterval === preset.value ? 'primary' : 'default'"
+            @click="applyPreset(preset.value)"
+          >
+            {{ preset.label }}
+          </el-button>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script setup>
-import { ref, onUnmounted } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
+import { ArrowDown } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useNodesStore } from '../stores/nodes'
 import { generateMockSpeedTest, calculateNodeStatus } from '../services/speedTest'
@@ -92,9 +109,44 @@ const nodesStore = useNodesStore()
 const isTesting = ref(false)
 const testProgress = ref(0)
 const lastUpdateTime = ref('从未')
-const showIntervalDialog = ref(false)
+const showIntervalSettings = ref(false)
 const tempRefreshInterval = ref(props.refreshInterval)
 let testInterval = null
+
+// 预设间隔
+const presets = [
+  { label: '5s', value: 5 },
+  { label: '10s', value: 10 },
+  { label: '30s', value: 30 },
+  { label: '60s', value: 60 }
+]
+
+// 切换间隔设置面板
+const toggleIntervalSettings = () => {
+  showIntervalSettings.value = !showIntervalSettings.value
+}
+
+// 处理滑块变化
+const handleSliderChange = (value) => {
+  tempRefreshInterval.value = value
+  emit('interval-change', value)
+  
+  if (isTesting.value) {
+    stopAutoTest()
+    startAutoTest()
+  }
+}
+
+// 应用预设值
+const applyPreset = (value) => {
+  tempRefreshInterval.value = value
+  emit('interval-change', value)
+  
+  if (isTesting.value) {
+    stopAutoTest()
+    startAutoTest()
+  }
+}
 
 const formatTime = (timestamp) => {
   if (!timestamp) return '从未'
@@ -170,23 +222,6 @@ const runSpeedTest = async () => {
 
 const handleManualTest = () => {
   runSpeedTest()
-}
-
-const handleRefreshIntervalChange = () => {
-  tempRefreshInterval.value = props.refreshInterval
-  showIntervalDialog.value = true
-}
-
-const confirmIntervalChange = () => {
-  showIntervalDialog.value = false
-  emit('interval-change', tempRefreshInterval.value)
-  
-  if (isTesting.value) {
-    stopAutoTest()
-    startAutoTest()
-  }
-  
-  ElMessage.success(`刷新间隔: ${tempRefreshInterval.value}秒`)
 }
 
 onUnmounted(() => {
@@ -287,14 +322,94 @@ onUnmounted(() => {
   font-size: 11px;
 }
 
-.dialog-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+.control-actions .el-button.active {
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 15px rgba(0, 245, 255, 0.2);
 }
 
-.dialog-actions .el-button {
-  padding: 6px 12px;
+.arrow-icon {
+  margin-left: 4px;
+  transition: transform 0.3s;
   font-size: 12px;
+}
+
+.arrow-icon.rotate {
+  transform: rotate(180deg);
+}
+
+/* 展开动画 */
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.expand-enter-from,
+.expand-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+
+.expand-enter-to,
+.expand-leave-from {
+  max-height: 200px;
+  opacity: 1;
+}
+
+/* 内联设置面板（保持缩小尺寸） */
+.interval-settings {
+  margin-top: 3px;
+  padding-top: 5px;
+  border-top: 1px solid var(--border-color);
+}
+
+.current-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+  padding: 3px;
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.15) 0%, rgba(59, 130, 246, 0.08) 100%);
+  border-radius: 4px;
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  box-shadow: 0 0 8px rgba(0, 245, 255, 0.15);
+}
+
+.value-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--neon-cyan);
+  font-family: 'SF Mono', 'Monaco', monospace;
+  text-shadow: 0 0 8px rgba(0, 245, 255, 0.5);
+}
+
+.slider-container {
+  margin-bottom: 5px;
+  padding: 0 2px;
+}
+
+.preset-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+}
+
+.preset-buttons .el-button {
+  padding: 2px 3px;
+  font-size: 5px;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.preset-buttons .el-button:hover {
+  transform: translateY(-0.5px);
+  box-shadow: 0 2px 4px rgba(0, 245, 255, 0.3);
+}
+
+.preset-buttons .el-button--primary {
+  background: linear-gradient(135deg, #00f5ff 0%, #10b981 100%);
+  border-color: transparent;
+  box-shadow: 0 0 6px rgba(0, 245, 255, 0.4);
 }
 </style>

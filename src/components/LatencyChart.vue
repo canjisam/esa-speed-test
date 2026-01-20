@@ -142,7 +142,7 @@ const updateChart = () => {
             </div>
             <div style="display: flex; justify-content: space-between;">
               <span style="color: #9ca3af;">状态:</span>
-              <span style="font-weight: 500; color: ${param.value < 150 ? '#10b981' : param.value < 300 ? '#f59e0b' : '#ef4444'};">${status}</span>
+              <span style="font-weight: 500; color: ${param.value < 150 ? '#10b981' : param.value < 300 ? '#f59e0b' : '#00f5ff'};">${status}</span>
             </div>
           </div>
         `
@@ -209,7 +209,7 @@ const updateChart = () => {
       pieces: [
         { gt: 0, lte: 150, color: '#10b981' },
         { gt: 150, lte: 300, color: '#f59e0b' },
-        { gt: 300, color: '#ef4444' }
+        { gt: 300, color: '#00f5ff' }
       ]
     },
     series: [
@@ -277,31 +277,46 @@ const updateChart = () => {
                 position: 'end',
                 formatter: '300ms',
                 fontSize: 10,
-                color: '#ef4444',
+                color: '#00f5ff',
                 padding: [0, 0, 4, 0]
               },
-              lineStyle: { color: '#ef4444', type: 'dashed', opacity: 0.6 }
+              lineStyle: { color: '#00f5ff', type: 'dashed', opacity: 0.6 }
             }
           ]
         },
         markPoint: {
           symbol: 'circle',
           symbolSize: 45,
-          itemStyle: {
-            color: '#00f5ff',
-            borderColor: '#fff',
-            borderWidth: 2,
-            shadowColor: 'rgba(0, 245, 255, 0.6)',
-            shadowBlur: 15
-          },
           label: {
             fontSize: 10,
             fontWeight: 600,
             color: '#fff'
           },
           data: [
-            { type: 'max', name: '最大值', symbolOffset: [0, -10] },
-            { type: 'min', name: '最小值', symbolOffset: [0, 10] }
+            { 
+              type: 'max', 
+              name: '最大值', 
+              symbolOffset: [0, -10],
+              itemStyle: {
+                color: '#00f5ff',
+                borderColor: '#fff',
+                borderWidth: 2,
+                shadowColor: 'rgba(239, 68, 68, 0.6)',
+                shadowBlur: 15
+              }
+            },
+            { 
+              type: 'min', 
+              name: '最小值', 
+              symbolOffset: [0, 10],
+              itemStyle: {
+                color: '#10b981',
+                borderColor: '#fff',
+                borderWidth: 2,
+                shadowColor: 'rgba(16, 185, 129, 0.6)',
+                shadowBlur: 15
+              }
+            }
           ]
         }
       }
